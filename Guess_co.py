@@ -6,39 +6,6 @@ import cocos
 from cocos.actions import *
 import pyglet
 import random
-import os
-
-class MouseDisplay(cocos.layer.Layer):
-    
-
-
-    is_event_handler = True
-
-    def __init__(self):
-
-        super(MouseDisplay, self).__init__()
-
-    def update_text(self, x, y):
-        
-        text = 'mouse @ {},{}'.format(x, y)
-        #self.text.element.x = self.posx
-        #self.text.element.y = self.posy
-
-    def update_sprite(self, x, y):
-
-        self.posx, self.posy = cocos.director.director.get_virtual_coordinates(x, y)
-
-    def on_mouse_motion(self, x, y, dx, dy):    
-        self.update_text(x, y)
-        self.update_sprite(x, y)
-
-    def on_mouse_drage(self, x, y, dx, dy, buttons, modifiers):
-
-        self.update_text(x, y)
-
-    def on_mouse_press(self, x, y, buttons, modifiers):
-
-        self.update_text(x, y)
 
 
 class TableLayer(cocos.layer.Layer):
