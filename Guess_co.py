@@ -9,17 +9,24 @@ import random
 
 
 class TableLayer(cocos.layer.Layer):
-
-
- 
+    """The main game layer
+    
+    
+    """ 
     is_event_handler = True
  
 
     def __init__(self, GameRange = 6, Numbers = 4, MaxLevel = 13):
+        """
+
+
+        """
 
         super(TableLayer, self).__init__()
 
         self.keys_pressed = set()
+        
+        # use the StartTimer to calculate the time passed
         self.StartTimer = 0
         self.schedule(self.Timer_Refresh)
         
@@ -32,13 +39,15 @@ class TableLayer(cocos.layer.Layer):
         self.BlackChar = '▪'
         self.WhiteChar = '▫'
 
-        self.Result = [random.randrange(self.GameRange) + 1 for i in range(self.Numbers)]
+        # the .Result is the Numbers to be guessed, which will be generated in the Game_init()
+        self.Result = []
         
         self.HighLightColor = (0, 200, 200, 255)
         self.DefaultColor = (0, 0, 0, 255)
         
         self.image = pyglet.resource.image('bg.png')
-
+        
+        # Number_Label are the labels to show the numbers 
         self.Number_Label = [cocos.text.Label('', 
             font_size = 26, 
             font_name = 'Verdana', 
@@ -46,6 +55,7 @@ class TableLayer(cocos.layer.Layer):
             color = self.DefaultColor, 
             x = 33 + ((i) % 4) * 69, y = 628 - ((i) // 4) * 48 ) for i in range(self.MaxLevel * self.Numbers)]
         
+        # show the first line with '0's
         for i in range(self.Numbers):
             self.Number_Label[i].element.text = '0'
         
@@ -83,7 +93,7 @@ class TableLayer(cocos.layer.Layer):
         self.add(self.BestRound_Label)
 
         self.TimePassed = 0
-        self.BestTime = 100000
+        self.BestTime = 100000 # the BestTime = 100000 here is not equal to the value showed as '99:59' 
 
         self.Time_Label = cocos.text.Label('00:00',
             font_size = 16,
@@ -119,7 +129,11 @@ class TableLayer(cocos.layer.Layer):
 
 
     def Timer_Refresh(self, dt):
-
+        """A simple on_time event
+        dt means the time passed after the last event
+        use the StartTimer and 'dt' to set the time interval
+        use the TimePassed the calculate the time passed of the game
+        """
         self.StartTimer += dt
         self.TimePassed += dt
         if self.StartTimer > 1:  # timer_interval
@@ -128,7 +142,11 @@ class TableLayer(cocos.layer.Layer):
 
 
     def Game_init(self):
-
+        """Initialise the new game when:
+        - game starts
+        - game ends (over the MaxLevel)
+        - game wins
+        """
 
         self.GameStatus = True
         self.round = 1
@@ -138,7 +156,6 @@ class TableLayer(cocos.layer.Layer):
         
         self.Result = [random.randrange(self.GameRange) + 1 for i in range(self.Numbers)]
 
-        self.Bingo_sprite.z = -2
         self.Round_Label.element.text = str(self.round)
         self.Bingo_sprite.visible = False
         self.Gameover_sprite.visible = False
@@ -155,14 +172,19 @@ class TableLayer(cocos.layer.Layer):
 
 
     def draw(self):
-
+        """the function to draw backgroud image
+        but the mechanism is unknown
+        """
         self.image.blit(0,0)
 
 
     def update_text(self):
-
+        """Upate the UI
+        get keyboard input and react
+        """
         key_names = [pyglet.window.key.symbol_string(k) for k in self.keys_pressed]
-
+        
+        # the index means the current position( 0 - 3) of the numbers to be controlled 
         Now_Index = 0
         Before_Index = 0
 
@@ -170,7 +192,8 @@ class TableLayer(cocos.layer.Layer):
             
             if not(self.GameStatus):
                 self.Game_init()
-
+            
+            #tResult stores the numbers that you guessed
             tResult = []
             for i in range(self.Numbers):
                 try:
@@ -189,7 +212,8 @@ class TableLayer(cocos.layer.Layer):
                 self.Result_Label[(self.round - 1) * 4 + i].element.text = ResultString[GuessResult[i]] 
 
             if GuessResult.count(2) == 4:
-                #print ('Bingo!')
+                
+                #the 'Bingo!' process
                 self.GameStatus = False
                 self.Bingo_sprite.visible = True
                 if self.round < self.BestRound:
@@ -203,16 +227,15 @@ class TableLayer(cocos.layer.Layer):
                 return 2
             
             if self.round == self.MaxLevel:
-                #print('Game End')
+                
+                #the 'Game End' process
                 self.Gameover_sprite.visible = True
                 self.GameStatus = False
                 return 4
 
-            # init for the next round
-
+            # go to the next round
             Now_Index = (self.round - 1) * 4 + self.Number_position
             self.Number_Label[Now_Index].element.color = self.DefaultColor
-
             self.round += 1
             self.Number_Index = 0
             self.Number_position = 0
@@ -297,6 +320,11 @@ class TableLayer(cocos.layer.Layer):
 
     def Guess(self, GuessString = None):
 
+        """The main Guess function
+        returns a list whose len is self.Numbers: 
+        [black,black,...,white,white,...,0,...,0]
+        in which: black = 2, white = 1
+        """
         if GuessString == None or (0 in GuessString):
             return None
         else:
